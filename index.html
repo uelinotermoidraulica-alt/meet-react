@@ -10,10 +10,15 @@
 <body>
 <div class="app">
 <header class="topbar">
-<div><h1>MEET & REACT</h1><p>Persone reali entro 300 metri.</p></div>
-<button class="pill" id="authBtn">Profilo</button>
+<div>
+<h1>MEET & REACT</h1>
+<p>Solo persone reali entro 300 metri.</p>
+</div>
+<button class="pill" id="authBtn">Login</button>
 </header>
+
 <main id="content"></main>
+
 <nav class="bottom-nav">
 <button onclick="showView('home')" id="nav-home">📍<span>Vicini</span></button>
 <button onclick="showView('stickers')" id="nav-stickers">💜<span>Sticker</span></button>
@@ -22,7 +27,8 @@
 <button onclick="showView('menu')" id="nav-menu">▦<span>Menu</span></button>
 </nav>
 </div>
+
 <div id="toast"></div>
-<script src="./script.js?v=profile2"></script>
+<script type="module" src="./script.js?v=realusers1"></script>
 </body>
 </html>
