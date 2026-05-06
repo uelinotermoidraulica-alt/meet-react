@@ -1,43 +1,34 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meet & React</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Meet & React</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div id="app" class="app">
+    <header class="topbar">
+      <div>
+        <h1>MEET & REACT</h1>
+        <p>Non aspettare il match. Reagisci.</p>
+      </div>
+      <button class="pill" onclick="showView('profile')">❤️ <span id="heartCount">35</span></button>
+    </header>
 
-<div class="container">
-<h1>🔥 Meet & React</h1>
-<p class="subtitle">Non aspettare il match. Reagisci.</p>
+    <main id="content"></main>
 
-<div class="card">
-<h2>Giulia, 32</h2>
-<p>📍 120 m • 🟢 Attiva ora</p>
-<p>🎧 Musica • ⛰ Montagna • 🍹 Aperitivo</p>
-<p class="common">🔥 2 interessi in comune</p>
+    <nav class="bottom-nav">
+      <button onclick="showView('home')" id="nav-home">📍<span>Vicini</span></button>
+      <button onclick="showView('stickers')" id="nav-stickers">💜<span>Sticker</span></button>
+      <button onclick="showView('tris')" id="nav-tris">🎮<span>Tris</span></button>
+      <button onclick="showView('chat')" id="nav-chat">💬<span>Chat</span></button>
+      <button onclick="showView('menu')" id="nav-menu">▦<span>Menu</span></button>
+    </nav>
+  </div>
 
-<div class="bar">
-<div class="progress" style="width:34%"></div>
-</div>
-<p class="score">Interesse 34/100</p>
-</div>
-
-<div class="actions">
-<button onclick="sendSticker('☕ Caffè insieme?')">☕ Caffè</button>
-<button onclick="sendSticker('🍹 Drink?')">🍹 Drink</button>
-<button onclick="sendSticker('🔥 Sei tanta roba')">🔥 Sticker</button>
-</div>
-
-<div class="actions">
-<button onclick="alert('Sfida a tris')">🎮 Tris</button>
-<button onclick="alert('Passato')">❌ Passa</button>
-</div>
-
-<div id="log"></div>
-</div>
-
-<script src="script.js"></script>
+  <div id="toast"></div>
+  <script src="script.js"></script>
 </body>
 </html>
