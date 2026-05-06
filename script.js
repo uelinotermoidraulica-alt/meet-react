@@ -193,4 +193,15 @@ function toast(msg){
   setTimeout(()=>t.style.display="none",2300);
 }
 
-showView("home");
+showView("home");// Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAIydfYnvkcKVai2m6Zl7LjnsXiQnT0PMk"
+  authDomain: "meet-react-dd136.firebaseapp.com",
+  projectId: "meet-react-dd136",
+  storageBucket: "meet-react-dd136.firebasestorage.app",
+  messagingSenderId: "902511777751",
+  appId: "1:902511777751:web:514ffef33e30d704575d92",
+
+measurementId: "G-X3SEF0W2N5"
+};
+
