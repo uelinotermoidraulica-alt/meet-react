@@ -1,40 +1,207 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+const state = {
+  view: "home",
+  hearts: Number(localStorage.getItem("mr_hearts") || 35),
+  verified: localStorage.getItem("mr_verified") === "true",
+  myInterests: JSON.parse(localStorage.getItem("mr_interests") || '["musica","montagna","caffè"]'),
+  currentUser: 0,
+  points: JSON.parse(localStorage.getItem("mr_points") || '{"Giulia":34,"Marta":18,"Sara":61}'),
+  chat: JSON.parse(localStorage.getItem("mr_chat") || '["Giulia ha accettato il tuo sticker ☕"]'),
+  tris: Array(9).fill("")
+};
 
-const firebaseConfig={apiKey:"AIzaSyAIydfYnvkcKVai2m6Zl7LjnsXiQnT0PMk",authDomain:"meet-react-dd136.firebaseapp.com",projectId:"meet-react-dd136",storageBucket:"meet-react-dd136.firebasestorage.app",messagingSenderId:"902511777751",appId:"1:902511777751:web:514ffef33e30d704575d92",measurementId:"G-X3SEF0W2N5"};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
-let currentUser=null,currentProfile=null,view="nearby",nearbyUsers=[],gpsReady=false;
-const interestsList=["musica","montagna","caffè","aperitivo","moda","sport","viaggi","cinema","arte","moto","palestra","cucina","natura","ballo","lettura","metal detecting"];
-const stickers=[["☕","Caffè insieme?"],["🍹","Drink?"],["🔥","Sei tanta roba"],["👋","Sono qui vicino"],["💬","Parliamo due minuti?"],["🚶","Due passi?"]];
-const content=document.getElementById("content"),authBtn=document.getElementById("authBtn");
-document.querySelectorAll(".bottom-nav button").forEach(btn=>btn.addEventListener("click",()=>showView(btn.dataset.view)));
-window.showView=v=>{view=v;render();};
-authBtn.onclick=async()=>{if(currentUser){await signOut(auth);toast("Logout effettuato")}else showLogin();};
-onAuthStateChanged(auth,async user=>{currentUser=user;authBtn.textContent=user?"Esci":"Login";if(user){try{await loadOrCreateProfile();await updateMyLocation(false);await loadNearbyUsers();}catch(e){toast("Errore: "+cleanError(e.message));}}else{currentProfile=null;nearbyUsers=[];gpsReady=false;}render();});
-function defaultProfile(){return{uid:currentUser.uid,email:currentUser.email,name:"",age:"",bio:"",photo:"",interests:[],visible:true,profileComplete:false,lat:null,lng:null,updatedAt:Date.now()};}
-async function loadOrCreateProfile(){const ref=doc(db,"users",currentUser.uid),snap=await getDoc(ref);if(snap.exists())currentProfile={...defaultProfile(),...snap.data()};else{currentProfile=defaultProfile();await setDoc(ref,currentProfile);}}
-async function saveProfileToFirebase(){if(currentUser&&currentProfile)await setDoc(doc(db,"users",currentUser.uid),currentProfile,{merge:true});}
-async function updateMyLocation(showMsg=true){if(!currentUser||!currentProfile)return;if(!navigator.geolocation){gpsReady=false;if(showMsg)toast("GPS non supportato");return;}navigator.geolocation.getCurrentPosition(async pos=>{gpsReady=true;currentProfile.lat=pos.coords.latitude;currentProfile.lng=pos.coords.longitude;currentProfile.updatedAt=Date.now();await saveProfileToFirebase();await loadNearbyUsers();if(showMsg)toast("Posizione aggiornata");render();},()=>{gpsReady=false;if(showMsg)toast("Permetti il GPS per vedere chi è vicino");render();},{enableHighAccuracy:true,timeout:10000});}
-async function loadNearbyUsers(){nearbyUsers=[];if(!currentUser||!currentProfile||!currentProfile.lat||!currentProfile.lng)return;const qs=await getDocs(collection(db,"users"));qs.forEach(d=>{const u=d.data();if(!u.uid||u.uid===currentUser.uid||!u.profileComplete||u.visible===false||!u.lat||!u.lng)return;const distance=getDistanceMeters(currentProfile.lat,currentProfile.lng,u.lat,u.lng);if(distance<=300)nearbyUsers.push({...u,distance:Math.round(distance)});});nearbyUsers.sort((a,b)=>a.distance-b.distance);}
-function render(){document.querySelectorAll(".bottom-nav button").forEach(b=>b.classList.remove("active"));const nav=document.getElementById("nav-"+view);if(nav)nav.classList.add("active");if(!currentUser){content.innerHTML=welcomeView();return;}if(view==="nearby")content.innerHTML=nearbyView();if(view==="profile")content.innerHTML=profileView();if(view==="stickers")content.innerHTML=stickersView();if(view==="chat")content.innerHTML=chatView();if(view==="menu")content.innerHTML=menuView();}
-function welcomeView(){return `<div class="card"><h2>Benvenuto su Meet & React</h2><p class="bio">Accedi o registrati per usare l'app.</p><button class="btn primary" onclick="showLogin()">Login / Registrati</button></div>`;}
-window.showLogin=function(){content.innerHTML=`<div class="card"><h2>Login / Registrazione</h2><input class="input" id="email" placeholder="Email vera" type="email"><input class="input" id="password" placeholder="Password minimo 6 caratteri" type="password"><div class="grid2"><button class="btn primary" onclick="login()">Accedi</button><button class="btn" onclick="register()">Registrati</button></div><p class="small">Prima volta: Registrati.</p></div>`;}
-window.login=async()=>{try{await signInWithEmailAndPassword(auth,val("email"),val("password"));toast("Login riuscito");view="nearby";render();}catch(e){toast("Errore login: "+cleanError(e.message));}};
-window.register=async()=>{try{const cred=await createUserWithEmailAndPassword(auth,val("email"),val("password"));await sendEmailVerification(cred.user);toast("Registrazione fatta. Controlla la mail.");view="profile";render();}catch(e){toast("Errore registrazione: "+cleanError(e.message));}};
-function nearbyView(){let html=`<h2 class="section-title">Persone vicine</h2><div class="notice">📍 Qui vedi se qualcuno è entro 300 metri reali.</div><button class="btn green" onclick="refreshLocation()">Aggiorna posizione GPS</button>`;if(!currentProfile){return html+`<div class="card"><h2>Profilo in caricamento</h2></div>`;}if(!currentProfile.profileComplete){return html+`<div class="card"><h2>Profilo non completo</h2><p class="bio">Questa è la sezione Vicini, ma per essere visibile devi completare foto, nome e passioni.</p><button class="btn primary" onclick="showView('profile')">Completa profilo</button></div>`;}if(!gpsReady){return html+`<div class="card"><h2>GPS non attivo</h2><p class="bio">Permetti la posizione al browser.</p></div>`;}if(!nearbyUsers.length){return html+`<div class="card"><h2>Nessun utente entro 300 m</h2><p class="bio">Per testare usa un secondo telefono con un altro account.</p></div>`;}return html+nearbyUsers.map(userCard).join("");}
-function userCard(u){const common=(u.interests||[]).filter(i=>(currentProfile.interests||[]).includes(i));return `<div class="card profile-preview"><div class="avatar">${u.photo?`<img src="${u.photo}">`:"🙂"}</div><div><h2 class="name">${esc(u.name)}${u.age?", "+esc(u.age):""}</h2><p class="meta">📍 ${u.distance} m • 🟢 In zona</p><p class="bio">${esc(u.bio||"")}</p><div class="chips">${(u.interests||[]).map(i=>`<span class="chip">${esc(i)}</span>`).join("")}</div><p class="common">🔥 ${common.length} interessi in comune</p><div class="grid2"><button class="btn primary" onclick="sendSticker('${u.uid}','☕ Caffè insieme?')">☕ Caffè</button><button class="btn" onclick="sendSticker('${u.uid}','🔥 Sei tanta roba')">🔥 Sticker</button></div></div></div>`;}
-function profileView(){const p=currentProfile||defaultProfile();return `<h2 class="section-title">Il mio profilo</h2><div class="card"><div class="profile-head"><div class="avatar-large" id="photoPreview">${p.photo?`<img src="${p.photo}">`:"🙂"}</div><div><h2>Foto profilo</h2><p class="bio">Carica una foto reale del viso.</p><label class="file-label">📸 Carica foto<input type="file" accept="image/*" onchange="loadPhoto(event)"></label></div></div><input class="input" id="pname" placeholder="Nome" value="${esc(p.name)}"><input class="input" id="page" placeholder="Età" inputmode="numeric" value="${esc(p.age)}"><textarea id="pbio" placeholder="Bio breve">${esc(p.bio)}</textarea><h3>Passioni / interessi</h3><div class="chips">${interestsList.map(i=>`<label class="chip-check"><input type="checkbox" value="${i}" ${(p.interests||[]).includes(i)?"checked":""}><span>${i}</span></label>`).join("")}</div><button class="btn primary" onclick="saveProfile()">Salva profilo</button></div>`;}
-window.loadPhoto=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{if(!currentProfile)currentProfile=defaultProfile();currentProfile.photo=ev.target.result;document.getElementById("photoPreview").innerHTML=`<img src="${currentProfile.photo}">`;toast("Foto caricata");};reader.readAsDataURL(file);};
-window.saveProfile=async()=>{if(!currentProfile)currentProfile=defaultProfile();currentProfile.name=val("pname");currentProfile.age=val("page");currentProfile.bio=val("pbio");currentProfile.interests=Array.from(document.querySelectorAll(".chip-check input:checked")).map(x=>x.value);currentProfile.profileComplete=Boolean(currentProfile.name&&currentProfile.photo&&currentProfile.interests.length>0);currentProfile.updatedAt=Date.now();await saveProfileToFirebase();if(!currentProfile.profileComplete){toast("Servono nome, foto e almeno un interesse");return;}toast("Profilo salvato");await updateMyLocation(false);await loadNearbyUsers();showView("nearby");};
-function stickersView(){return `<h2 class="section-title">Sticker</h2><div class="grid3">${stickers.map(s=>`<button class="sticker"><span class="emoji">${s[0]}</span>${s[1]}</button>`).join("")}</div>`;}
-function chatView(){return `<h2 class="section-title">Chat</h2><div class="card"><p class="bio">La chat reale sarà il prossimo passaggio.</p></div>`;}
-function menuView(){return `<h2 class="section-title">Menu</h2><div class="grid2"><button class="btn" onclick="showView('profile')">👤 Profilo</button><button class="btn" onclick="refreshLocation()">📍 Aggiorna GPS</button><button class="btn danger" onclick="authBtn.click()">🚪 Esci</button></div>`;}
-window.refreshLocation=async()=>await updateMyLocation(true);
-window.sendSticker=async(toUid,text)=>{await addDoc(collection(db,"messages"),{from:currentUser.uid,to:toUid,text:"Sticker: "+text,createdAt:serverTimestamp()});toast("Sticker inviato");};
-function val(id){return document.getElementById(id)?.value?.trim()||"";}
-function getDistanceMeters(lat1,lon1,lat2,lon2){const R=6371000,toRad=d=>d*Math.PI/180,dLat=toRad(lat2-lat1),dLon=toRad(lon2-lon1),a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
-function cleanError(msg){return String(msg).replace("Firebase: ","").replace("Error ","").replace("(auth/","").replace(").","");}
-function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.style.display="block";setTimeout(()=>t.style.display="none",3500);}
-function esc(str){return String(str||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
-render();
+const users = [
+  {name:"Giulia", age:32, distance:120, avatar:"💃", bio:"Aperitivo, musica e ironia.", interests:["musica","montagna","aperitivo"], verified:true},
+  {name:"Marta", age:28, distance:45, avatar:"🎧", bio:"Caffè, concerti e passeggiate.", interests:["musica","caffè","eventi"], verified:true},
+  {name:"Sara", age:35, distance:250, avatar:"⛰️", bio:"Natura, trekking e vino buono.", interests:["montagna","natura","food"], verified:false},
+  {name:"Luna", age:29, distance:410, avatar:"🌙", bio:"Fuori raggio demo: non deve comparire.", interests:["moda","cinema"], verified:true}
+];
+
+const stickers = [
+  ["🔥","Sei tanta roba"],["🍾","Sblocchiamo?"],["🤮","Non sei il mio tipo"],
+  ["☕","Caffè insieme?"],["🍹","Drink?"],["👋","Sono qui vicino"],
+  ["💋","Bacio"],["🚶","Due passi?"],["😏","Mi incuriosisci"],
+  ["🌙","After?"],["🍸","Drink + chimica?"],["💬","Parliamo due minuti?"]
+];
+
+function save(){
+  localStorage.setItem("mr_hearts", state.hearts);
+  localStorage.setItem("mr_verified", state.verified);
+  localStorage.setItem("mr_interests", JSON.stringify(state.myInterests));
+  localStorage.setItem("mr_points", JSON.stringify(state.points));
+  localStorage.setItem("mr_chat", JSON.stringify(state.chat));
+}
+
+function showView(view){
+  state.view = view;
+  document.querySelectorAll(".bottom-nav button").forEach(b=>b.classList.remove("active"));
+  const nav = document.getElementById("nav-"+view);
+  if(nav) nav.classList.add("active");
+  render();
+}
+
+function nearbyUsers(){ return users.filter(u => u.distance <= 300); }
+
+function commonInterests(u){
+  return u.interests.filter(i => state.myInterests.includes(i));
+}
+
+function render(){
+  document.getElementById("heartCount").textContent = state.hearts;
+  const c = document.getElementById("content");
+  if(state.view==="home") c.innerHTML = home();
+  if(state.view==="stickers") c.innerHTML = stickersView();
+  if(state.view==="tris") c.innerHTML = trisView();
+  if(state.view==="chat") c.innerHTML = chatView();
+  if(state.view==="menu") c.innerHTML = menuView();
+  if(state.view==="profile") c.innerHTML = profileView();
+}
+
+function home(){
+  const list = nearbyUsers().map((u,idx)=>{
+    const common = commonInterests(u);
+    const pts = state.points[u.name] || 0;
+    return `<div class="card profile-card" onclick="openProfile(${idx})">
+      <div class="avatar">${u.avatar}</div>
+      <div>
+        <h2 class="name">${u.name}, ${u.age}</h2>
+        <p class="meta">📍 ${u.distance} m • 🟢 Attiva ora</p>
+        <p class="bio">${u.bio}</p>
+        <div>${u.verified?'<span class="badge">✅ Verificata</span>':''}</div>
+        <div class="interests">${u.interests.map(i=>`<span class="chip">${i}</span>`).join("")}</div>
+        <p class="common">🔥 ${common.length} interessi in comune</p>
+        <div class="progress-wrap"><div class="progress-label"><span>Interesse</span><span>${pts}/100</span></div><div class="progress"><span style="width:${pts}%"></span></div></div>
+      </div>
+    </div>`;
+  }).join("");
+  return `<div class="notice">📍 Visibilità limitata a 300 metri. Le persone oltre questa distanza non compaiono.</div>
+  <h2 class="section-title">Persone vicine</h2>${list}`;
+}
+
+function openProfile(idx){
+  const u = nearbyUsers()[idx];
+  const common = commonInterests(u);
+  const pts = state.points[u.name] || 0;
+  document.body.insertAdjacentHTML("beforeend", `<div class="modal-bg" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="avatar">${u.avatar}</div>
+      <h2>${u.name}, ${u.age}</h2>
+      <p class="meta">📍 ${u.distance} m • 🟢 Attiva ora ${u.verified?'• ✅ verificata':''}</p>
+      <p>${u.bio}</p>
+      <div class="interests">${u.interests.map(i=>`<span class="chip">${i}</span>`).join("")}</div>
+      <p class="common">${common.length} interessi in comune</p>
+      <div class="progress-wrap"><div class="progress-label"><span>Interesse</span><span>${pts}/100</span></div><div class="progress"><span style="width:${pts}%"></span></div></div>
+      <div class="grid2" style="margin-top:14px">
+        <button class="btn primary" onclick="sendSticker('${u.name}','☕ Caffè insieme?')">☕ Caffè insieme?</button>
+        <button class="btn" onclick="sendSticker('${u.name}','🔥 Sei tanta roba')">🔥 Sticker</button>
+        <button class="btn" onclick="challenge('${u.name}')">🎮 Sfida a tris</button>
+        <button class="btn danger" onclick="toast('Hai passato ${u.name}')">❌ Passa</button>
+      </div>
+      <button class="btn" style="margin-top:10px" onclick="document.querySelector('.modal-bg').remove()">Chiudi</button>
+    </div>
+  </div>`);
+}
+
+function closeModal(e){ if(e.target.classList.contains("modal-bg")) e.target.remove(); }
+
+function sendSticker(name, text){
+  state.points[name] = Math.min(100, (state.points[name] || 0) + 5);
+  state.chat.push(`Hai inviato a ${name}: ${text}`);
+  save(); render();
+  toast(`Sticker inviato a ${name}: ${text}`);
+}
+
+function challenge(name){
+  state.points[name] = Math.min(100, (state.points[name] || 0) + 5);
+  state.chat.push(`Hai sfidato ${name} a tris 🎮`);
+  save(); showView("tris"); toast(`Sfida a tris inviata a ${name}`);
+}
+
+function stickersView(){
+  return `<h2 class="section-title">Sticker disponibili</h2>
+  <div class="grid3">${stickers.map(s=>`<button class="sticker" onclick="toast('Sticker selezionato: ${s[1]}')"><span class="emoji">${s[0]}</span><span>${s[1]}</span></button>`).join("")}</div>
+  <h2 class="section-title">Shop demo</h2>
+  <div class="card"><p>❤️ Cuori disponibili: <b>${state.hearts}</b></p><div class="grid2">
+  <button class="btn primary" onclick="buyPack(10)">10 sticker base</button>
+  <button class="btn" onclick="buyPack(25)">5 premium</button></div></div>`;
+}
+
+function buyPack(cost){
+  if(state.hearts < cost) return toast("Cuori insufficienti");
+  state.hearts -= cost; save(); render(); toast("Pacchetto acquistato demo");
+}
+
+function trisView(){
+  return `<h2 class="section-title">Sfida a tris</h2><div class="notice">Chi vince sblocca uno sticker speciale. Nessuno è obbligato a rispondere.</div>
+  <div class="tris-board">${state.tris.map((v,i)=>`<button class="cell" onclick="playCell(${i})">${v}</button>`).join("")}</div>
+  <button class="btn danger" onclick="resetTris()">Reset partita</button>`;
+}
+
+function playCell(i){
+  if(state.tris[i]) return;
+  state.tris[i]="X";
+  const empty = state.tris.map((v,i)=>v?null:i).filter(v=>v!==null);
+  if(empty.length){ state.tris[empty[Math.floor(Math.random()*empty.length)]]="O"; }
+  render();
+}
+
+function resetTris(){ state.tris = Array(9).fill(""); render(); }
+
+function chatView(){
+  return `<h2 class="section-title">Chat demo</h2><div class="card chat-box">
+  ${state.chat.map((m,i)=>`<div class="msg ${i%2?'':'me'}">${m}</div>`).join("")}
+  <div style="display:flex;gap:8px;margin-top:8px"><input class="input" id="msgInput" placeholder="Scrivi..." /><button class="btn primary" style="width:110px" onclick="sendMsg()">Invia</button></div>
+  </div>`;
+}
+
+function sendMsg(){
+  const i=document.getElementById("msgInput");
+  if(!i.value.trim()) return;
+  state.chat.push(i.value.trim()); i.value=""; save(); render();
+}
+
+function profileView(){
+  return `<h2 class="section-title">Il mio profilo</h2><div class="card">
+  <div class="avatar">🙂</div><h2>Andrea</h2>
+  <p class="meta">${state.verified?'✅ Profilo verificato':'⚠️ Profilo non verificato'}</p>
+  <p class="bio">La foto profilo deve rappresentare la persona reale.</p>
+  <div class="interests">${state.myInterests.map(i=>`<span class="chip">${i}</span>`).join("")}</div>
+  <button class="btn green" style="margin-top:14px" onclick="verifyPhoto()">📸 Verifica foto profilo</button></div>`;
+}
+
+function verifyPhoto(){
+  state.verified = true; save(); render(); toast("Verifica foto completata nel prototipo");
+}
+
+function menuView(){
+  return `<h2 class="section-title">Menu</h2>
+  <div class="grid2">
+    <button class="btn" onclick="showView('stickers')">🛒 Shop sticker</button>
+    <button class="btn" onclick="showView('profile')">👤 Profilo</button>
+    <button class="btn" onclick="toast('Modalità invisibile attivata demo')">👻 Invisibile</button>
+    <button class="btn" onclick="toast('Utente bloccato demo')">🚫 Blocca</button>
+    <button class="btn" onclick="toast('Segnalazione inviata demo')">⚠️ Segnala</button>
+    <button class="btn danger" onclick="logout()">🚪 Esci</button>
+  </div>
+  <p class="notice" style="margin-top:14px">Gli sticker sono inviti simbolici. Nessuno è obbligato a rispondere.</p>`;
+}
+
+function logout(){ localStorage.clear(); toast("Dati demo cancellati"); setTimeout(()=>location.reload(),700); }
+
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.style.display="block";
+  setTimeout(()=>t.style.display="none",2300);
+}
+
+showView("home");// Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAIydfYnvkcKVai2m6Zl7LjnsXiQnT0PMk"
+  authDomain: "meet-react-dd136.firebaseapp.com",
+  projectId: "meet-react-dd136",
+  storageBucket: "meet-react-dd136.firebasestorage.app",
+  messagingSenderId: "902511777751",
+  appId: "1:902511777751:web:514ffef33e30d704575d92",
+
+measurementId: "G-X3SEF0W2N5"
+};
+
