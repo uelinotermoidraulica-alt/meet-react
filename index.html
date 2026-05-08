@@ -1,34 +1,12 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Meet & React</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div id="app" class="app">
-    <header class="topbar">
-      <div>
-        <h1>MEET & REACT</h1>
-        <p>Non aspettare il match. Reagisci.</p>
-      </div>
-      <button class="pill" onclick="showView('profile')">❤️ <span id="heartCount">35</span></button>
-    </header>
-
-    <main id="content"></main>
-
-    <nav class="bottom-nav">
-      <button onclick="showView('home')" id="nav-home">📍<span>Vicini</span></button>
-      <button onclick="showView('stickers')" id="nav-stickers">💜<span>Sticker</span></button>
-      <button onclick="showView('tris')" id="nav-tris">🎮<span>Tris</span></button>
-      <button onclick="showView('chat')" id="nav-chat">💬<span>Chat</span></button>
-      <button onclick="showView('menu')" id="nav-menu">▦<span>Menu</span></button>
-    </nav>
-  </div>
-
-  <div id="toast"></div>
-  <script src="script.js"></script>
-</body>
-</html>
+<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Meet & React</title><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="style.css"></head>
+<body><div class="app"><header class="topbar"><div><h1>MEET & REACT</h1><p>Solo persone reali entro 300 metri.</p></div><button class="pill" id="authBtn">Login</button></header>
+<main id="content"></main>
+<nav class="bottom-nav">
+<button data-view="nearby" id="nav-nearby">📍<span>Vicini</span></button>
+<button data-view="stickers" id="nav-stickers">💜<span>Sticker</span></button>
+<button data-view="chat" id="nav-chat">💬<span>Chat</span></button>
+<button data-view="profile" id="nav-profile">👤<span>Profilo</span></button>
+<button data-view="menu" id="nav-menu">▦<span>Menu</span></button>
+</nav></div><div id="toast"></div><script type="module" src="./script.js?v=navprofilefix2"></script></body></html>
