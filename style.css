@@ -54,11 +54,4 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:
 .msg{max-width:80%;padding:10px 12px;border-radius:16px;background:#252145;color:#fff;align-self:flex-start}
 .msg.me{background:linear-gradient(135deg,var(--pink),var(--purple));align-self:flex-end}
 .hidden{display:none}
-
-body{
-  background-image:url('./Risorse/sfondo.png');
-  background-size:cover;
-  background-position:center;
-  background-repeat:no-repeat;
-  background-attachment:fixed;
 }
