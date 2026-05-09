@@ -2,61 +2,630 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>Meet & React</title>
-<link rel="stylesheet" href="style.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap');
+
+:root{
+  --dark:#140b05;
+  --wood1:#3a1d0a;
+  --wood2:#7a451c;
+  --wood3:#c6883b;
+  --cream:#ffe8bd;
+  --gold:#f4bd6b;
+  --green:#547a24;
+  --red:#7e2619;
+  --pink:#e65292;
+  --violet:#6c4cff;
+  --glass:rgba(18,10,5,.76);
+  --line:rgba(255,220,170,.25);
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:'Fredoka',Arial,sans-serif;
+  color:white;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 15% 10%,rgba(255,211,130,.16),transparent 25%),
+    radial-gradient(circle at 85% 15%,rgba(255,166,80,.10),transparent 28%),
+    linear-gradient(120deg,rgba(35,18,6,.88),rgba(12,6,3,.86)),
+    repeating-linear-gradient(90deg,#8a5629 0,#9c6635 6px,#7a451f 12px,#a86e39 22px);
+  background-attachment:fixed;
+}
+
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.05),transparent 7%,rgba(0,0,0,.12) 12%,transparent 19%),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 7px);
+  opacity:.42;
+}
+
+.app{
+  position:relative;
+  max-width:520px;
+  min-height:100vh;
+  margin:auto;
+  padding:calc(18px + env(safe-area-inset-top)) 18px calc(96px + env(safe-area-inset-bottom));
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.app-title{
+  margin:0;
+  font-size:34px;
+  line-height:1;
+  color:var(--cream);
+  letter-spacing:.6px;
+  text-shadow:0 3px 0 #4b230d,0 8px 16px rgba(0,0,0,.65);
+}
+
+.app-subtitle{
+  margin:7px 0 0;
+  color:#f6d19b;
+  font-size:15px;
+  font-weight:700;
+  text-shadow:0 2px 4px rgba(0,0,0,.7);
+}
+
+.pill,.btn{
+  border:1px solid var(--line);
+  border-radius:20px;
+  color:#fff3d6;
+  font-family:'Fredoka',Arial,sans-serif;
+  font-weight:700;
+  background:linear-gradient(135deg,#4c250d,#9f622b);
+  text-shadow:0 2px 0 #4c210a;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.24),inset 0 -4px 0 rgba(42,18,6,.48),0 8px 18px rgba(0,0,0,.38);
+}
+
+.pill{padding:11px 15px;white-space:nowrap}
+.btn{width:100%;padding:15px;font-size:17px;margin:6px 0;cursor:pointer}
+.btn.primary{background:linear-gradient(135deg,var(--pink),var(--violet));text-shadow:0 2px 0 rgba(45,0,80,.5)}
+.btn.green{background:linear-gradient(135deg,#355915,#78a32d)}
+.btn.red{background:linear-gradient(135deg,#5b1811,#aa3a24)}
+
+.card{
+  background:linear-gradient(180deg,rgba(36,22,13,.83),rgba(17,9,5,.86));
+  border:1px solid var(--line);
+  border-radius:28px;
+  padding:18px;
+  margin:0 0 16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 14px 34px rgba(0,0,0,.48);
+  backdrop-filter:blur(8px);
+}
+
+h2.screen-title{
+  margin:0 0 14px;
+  color:#fff0cc;
+  font-size:32px;
+  text-shadow:0 3px 0 #4a210b,0 8px 14px rgba(0,0,0,.55);
+}
+
+.card-title{
+  margin:0 0 8px;
+  color:#ffd48e;
+  font-size:25px;
+  text-shadow:0 2px 0 #4c210a;
+}
+
+.text,.bio,.small{
+  color:#f0d3a9;
+  font-size:16px;
+  line-height:1.35;
+}
+
+.small{font-size:13px}
+
+.input,textarea{
+  width:100%;
+  border:1px solid rgba(255,220,170,.22);
+  border-radius:18px;
+  padding:14px;
+  margin:7px 0;
+  background:rgba(8,5,3,.62);
+  color:white;
+  font-family:'Fredoka',Arial,sans-serif;
+  font-size:16px;
+  outline:none;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.35);
+}
+
+textarea{min-height:92px;resize:none}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+.user-card{
+  display:grid;
+  grid-template-columns:90px 1fr;
+  gap:14px;
+  align-items:center;
+}
+
+.avatar{
+  width:86px;
+  height:86px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  background:radial-gradient(circle at 30% 24%,#edc17b,#8a501f 58%,#3b1c0a);
+  border:3px solid #d79a54;
+  box-shadow:inset 0 2px 5px rgba(255,255,255,.24),0 8px 20px rgba(0,0,0,.5);
+  font-size:36px;
+}
+
+.avatar.big{
+  width:140px;
+  height:140px;
+  margin:8px auto 14px;
+  font-size:54px;
+}
+
+.avatar img{width:100%;height:100%;object-fit:cover}
+
+.distance{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:5px 10px;
+  background:rgba(78,128,35,.35);
+  color:#caff91;
+  border:1px solid rgba(174,255,120,.25);
+  border-radius:999px;
+  font-weight:700;
+}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip,label.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 11px;
+  border-radius:999px;
+  color:#ffe1a8;
+  background:linear-gradient(135deg,#42210c,#875021);
+  border:1px solid rgba(255,220,170,.18);
+  box-shadow:0 4px 10px rgba(0,0,0,.28);
+  font-size:14px;
+  font-weight:700;
+}
+label.chip input{accent-color:#f0b761}
+
+.interest-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin:10px 0;
+}
+.interest-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 14px;
+  border-radius:15px;
+  background:rgba(15,8,4,.55);
+  border:1px solid rgba(255,220,170,.14);
+  color:#ffe3b0;
+}
+
+.file-label{
+  display:block;
+  width:max-content;
+  margin:0 auto 12px;
+  padding:10px 14px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#4c250d,#9f622b);
+  color:#fff3d6;
+  font-weight:700;
+  box-shadow:0 8px 18px rgba(0,0,0,.35);
+}
+.file-label input{display:none}
+
+.bottom-nav{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  max-width:520px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  background:linear-gradient(180deg,rgba(48,26,12,.93),rgba(16,8,4,.96));
+  border-top:1px solid rgba(255,220,170,.24);
+  padding:8px 7px calc(8px + env(safe-area-inset-bottom));
+  box-shadow:0 -10px 28px rgba(0,0,0,.55);
+  backdrop-filter:blur(12px);
+}
+
+.nav-item{
+  border:0;
+  background:transparent;
+  color:#d9a56b;
+  font-family:'Fredoka',Arial,sans-serif;
+  font-weight:700;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+  font-size:11px;
+  text-shadow:0 2px 0 #2b1206;
+}
+
+.nav-icon{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:radial-gradient(circle at 30% 22%,#e2a65a,#6f3b17 65%,#2b1306);
+  box-shadow:inset 0 2px 5px rgba(255,255,255,.25),0 5px 11px rgba(0,0,0,.42);
+  font-size:18px;
+}
+
+.nav-item.active{
+  color:#fff2cc;
+  transform:translateY(-3px);
+}
+.nav-item.active .nav-icon{
+  box-shadow:0 0 18px rgba(255,188,82,.85),inset 0 2px 5px rgba(255,255,255,.25);
+}
+
+.chat-box{
+  max-height:48vh;
+  overflow:auto;
+  padding:6px 0;
+}
+
+.bubble{
+  max-width:82%;
+  padding:12px 14px;
+  border-radius:18px;
+  margin:8px 0;
+  color:#fff4dc;
+  box-shadow:0 7px 15px rgba(0,0,0,.25);
+}
+.bubble.me{
+  margin-left:auto;
+  background:linear-gradient(135deg,#874516,#c07c34);
+  border-bottom-right-radius:5px;
+}
+.bubble.other{
+  background:rgba(20,12,7,.85);
+  border:1px solid rgba(255,220,170,.16);
+  border-bottom-left-radius:5px;
+}
+
+.tris-board{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  background:linear-gradient(135deg,#4a250e,#9a5f2a);
+  padding:12px;
+  border-radius:22px;
+  box-shadow:inset 0 2px 10px rgba(0,0,0,.5),0 12px 24px rgba(0,0,0,.4);
+}
+.cell{
+  aspect-ratio:1;
+  border-radius:14px;
+  border:1px solid rgba(255,220,170,.22);
+  background:linear-gradient(135deg,#5a2d10,#8e551f);
+  color:#ffd28e;
+  font-size:42px;
+  font-weight:700;
+  text-shadow:0 3px 0 rgba(0,0,0,.45);
+}
+
+#toast{
+  position:fixed;
+  bottom:96px;
+  left:18px;
+  right:18px;
+  max-width:480px;
+  margin:auto;
+  display:none;
+  z-index:99;
+  padding:14px;
+  text-align:center;
+  font-weight:700;
+  border-radius:18px;
+  background:rgba(31,16,8,.96);
+  border:1px solid var(--line);
+  color:#fff0cc;
+}
+</style>
 </head>
 <body>
+<div class="app">
+  <header class="topbar">
+    <div>
+      <h1 class="app-title">Meet & React</h1>
+      <p class="app-subtitle">Persone vere entro 300 metri</p>
+    </div>
+    <button class="pill" id="authBtn">Login</button>
+  </header>
 
-<div class="overlay">
+  <main id="content"></main>
 
-<h1 class="app-title">Meet & React</h1>
-<p class="app-subtitle">Persone reali entro 300 metri</p>
-
-<section class="card">
-<h2 class="menu-title">Persone vicine</h2>
-<p class="menu-text">Scopri chi è entro 300 metri.</p>
-<button class="wood-btn">Aggiorna posizione GPS</button>
-</section>
-
-<section class="card">
-<h2 class="menu-title">Profilo</h2>
-
-<div class="profile-pic">🙂</div>
-
-<input type="text" placeholder="Nome">
-<input type="number" placeholder="Età">
-
-<textarea placeholder="Breve bio"></textarea>
-
-<h3 class="small-title">Interessi</h3>
-<div class="tags">
-<span>musica</span>
-<span>montagna</span>
-<span>caffè</span>
-<span>aperitivo</span>
-<span>viaggi</span>
-<span>metal detecting</span>
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-view="vicini"><span class="nav-icon">🧭</span><span>Vicini</span></button>
+    <button class="nav-item" data-view="sticker"><span class="nav-icon">🎟️</span><span>Sticker</span></button>
+    <button class="nav-item" data-view="chat"><span class="nav-icon">💬</span><span>Chat</span></button>
+    <button class="nav-item" data-view="profilo"><span class="nav-icon">👤</span><span>Profilo</span></button>
+    <button class="nav-item" data-view="tris"><span class="nav-icon">❌</span><span>Tris</span></button>
+    <button class="nav-item" data-view="menu"><span class="nav-icon">☰</span><span>Menu</span></button>
+  </nav>
 </div>
+<div id="toast"></div>
 
-<button class="wood-btn">Salva profilo</button>
-</section>
+<script>
+let logged=false;
+let demo=false;
+let view='home';
+let profile={
+  name:'Demo',
+  age:'30',
+  bio:'Profilo demo senza registrazione',
+  photo:'',
+  interests:['musica','montagna','caffè']
+};
+let selectedChat='Giulia';
+let messages=[
+  {from:'other',text:'Ciao, sono vicino a te.'},
+  {from:'me',text:'Ciao! Ho visto che abbiamo interessi in comune.'}
+];
+let board=Array(9).fill('');
+let turn='X';
+let gameOver=false;
 
-<section class="card">
-<h2 class="menu-title">Sfida a tris</h2>
-<p class="menu-text">Sfida simpatica per ottenere una chat bonus.</p>
-<button class="wood-btn">Avvia sfida</button>
-</section>
+const users=[
+  {name:'Giulia',age:24,distance:120,bio:'Amo viaggi, musica e tramonti al mare.',interests:['musica','viaggi','caffè']},
+  {name:'Luca',age:26,distance:180,bio:'Montagna, natura e cinema.',interests:['montagna','cinema','natura']}
+];
 
-<nav class="bottom-bar">
-<div class="nav-item active">🧭<br><span>Vicini</span></div>
-<div class="nav-item">🎟️<br><span>Sticker</span></div>
-<div class="nav-item">💬<br><span>Chat</span></div>
-<div class="nav-item">👤<br><span>Profilo</span></div>
-<div class="nav-item">⚙️<br><span>Menu</span></div>
-</nav>
+const content=document.getElementById('content');
+const authBtn=document.getElementById('authBtn');
 
-</div>
+document.querySelectorAll('.nav-item').forEach(btn=>{
+  btn.onclick=()=>show(btn.dataset.view);
+});
 
+authBtn.onclick=()=>{
+  if(logged){logged=false;demo=false;authBtn.textContent='Login';show('home');toast('Uscito');}
+  else showLogin();
+};
+
+function show(v){
+  view=v;
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  const active=document.querySelector(`[data-view="${v}"]`);
+  if(active) active.classList.add('active');
+  render();
+}
+
+function render(){
+  if(!logged && view!=='home'){showLogin();return;}
+  if(view==='home') home();
+  if(view==='vicini') vicini();
+  if(view==='profilo') profilo();
+  if(view==='chat') chat();
+  if(view==='sticker') sticker();
+  if(view==='tris') tris();
+  if(view==='menu') menu();
+}
+
+function home(){
+  content.innerHTML=`
+    <section class="card">
+      <h2 class="screen-title">Benvenuto</h2>
+      <p class="text">Accedi, registrati o usa la demo.</p>
+      <button class="btn primary" onclick="showLogin()">Login / Registrati</button>
+      <button class="btn green" onclick="demoAccess()">Entra in demo</button>
+      <p class="small">Demo: demo@meetreact.local / Demo1234</p>
+    </section>
+  `;
+}
+
+function showLogin(){
+  content.innerHTML=`
+    <section class="card">
+      <h2 class="screen-title">Login</h2>
+      <input class="input" id="email" placeholder="Email">
+      <input class="input" id="password" placeholder="Password" type="password">
+      <div class="grid2">
+        <button class="btn primary" onclick="login()">Accedi</button>
+        <button class="btn" onclick="register()">Registrati</button>
+      </div>
+      <button class="btn green" onclick="demoAccess()">Entra in demo</button>
+      <p class="small">La registrazione invierà una mail di verifica nella versione Firebase.</p>
+    </section>
+  `;
+}
+
+function login(){
+  const e=document.getElementById('email').value.trim();
+  const p=document.getElementById('password').value.trim();
+  if(e==='demo@meetreact.local' && p==='Demo1234'){demoAccess();return;}
+  logged=true;authBtn.textContent='Esci';show('vicini');toast('Accesso effettuato');
+}
+
+function register(){
+  logged=true;authBtn.textContent='Esci';show('profilo');toast('Registrazione demo effettuata');
+}
+
+function demoAccess(){
+  logged=true;demo=true;authBtn.textContent='Esci';show('vicini');toast('Demo attiva');
+}
+
+function vicini(){
+  content.innerHTML=`
+    <h2 class="screen-title">Persone vicine</h2>
+    <p class="text">Qui vedi chi è entro 300 metri.</p>
+    <button class="btn green" onclick="toast('Posizione GPS aggiornata')">Aggiorna posizione GPS</button>
+    ${demo?'<p class="text">Modalità demo attiva.</p>':''}
+    ${users.map(u=>`
+      <section class="card user-card">
+        <div class="avatar">🙂</div>
+        <div>
+          <h3 class="card-title">${u.name}, ${u.age}</h3>
+          <span class="distance">● ${u.distance} m</span>
+          <p class="bio">${u.bio}</p>
+          <div class="chips">${u.interests.map(i=>`<span class="chip">${i}</span>`).join('')}</div>
+          <button class="btn primary" onclick="openChat('${u.name}')">Apri chat</button>
+          <button class="btn" onclick="challenge('${u.name}')">Sfida a tris</button>
+        </div>
+      </section>
+    `).join('')}
+  `;
+}
+
+function openChat(name){
+  selectedChat=name;
+  show('chat');
+}
+
+function chat(){
+  content.innerHTML=`
+    <h2 class="screen-title">Chat</h2>
+    <section class="card">
+      <h3 class="card-title">${selectedChat}</h3>
+      <div class="chat-box">
+        ${messages.map(m=>`<div class="bubble ${m.from==='me'?'me':'other'}">${m.text}</div>`).join('')}
+      </div>
+      <input class="input" id="msg" placeholder="Scrivi un messaggio...">
+      <button class="btn primary" onclick="sendMsg()">Invia</button>
+    </section>
+  `;
+}
+
+function sendMsg(){
+  const input=document.getElementById('msg');
+  if(!input.value.trim()){toast('Scrivi un messaggio');return;}
+  messages.push({from:'me',text:input.value.trim()});
+  input.value='';
+  chat();
+}
+
+function profilo(){
+  content.innerHTML=`
+    <h2 class="screen-title">Il tuo profilo</h2>
+    <section class="card">
+      <div class="avatar big" id="photoPreview">${profile.photo?`<img src="${profile.photo}">`:'🙂'}</div>
+      <label class="file-label">📷 Carica foto<input type="file" accept="image/*" onchange="loadPhoto(event)"></label>
+      <input class="input" id="pname" placeholder="Nome" value="${profile.name}">
+      <input class="input" id="page" placeholder="Età" value="${profile.age}">
+      <textarea id="pbio" placeholder="Breve bio">${profile.bio}</textarea>
+      <h3 class="card-title">Interessi</h3>
+      <div class="interest-list">
+        ${['musica','montagna','caffè','aperitivo','viaggi','sport','cinema','natura','metal detecting'].map(i=>`
+          <label class="interest-row"><span>${i}</span><input type="checkbox" value="${i}" ${profile.interests.includes(i)?'checked':''}></label>
+        `).join('')}
+      </div>
+      <button class="btn" onclick="saveProfile()">Salva profilo</button>
+    </section>
+  `;
+}
+
+function loadPhoto(e){
+  const f=e.target.files[0];
+  if(!f)return;
+  const r=new FileReader();
+  r.onload=x=>{
+    profile.photo=x.target.result;
+    document.getElementById('photoPreview').innerHTML=`<img src="${profile.photo}">`;
+  };
+  r.readAsDataURL(f);
+}
+
+function saveProfile(){
+  profile.name=document.getElementById('pname').value;
+  profile.age=document.getElementById('page').value;
+  profile.bio=document.getElementById('pbio').value;
+  profile.interests=[...document.querySelectorAll('.interest-row input:checked')].map(x=>x.value);
+  toast('Profilo salvato');
+}
+
+function sticker(){
+  content.innerHTML=`
+    <h2 class="screen-title">Sticker</h2>
+    <div class="grid3">
+      ${['☕','🍹','🔥','🍋','🍑','🍌'].map((s,i)=>`<button class="sticker cell" onclick="toast('Sticker inviato')">${s}</button>`).join('')}
+    </div>
+  `;
+}
+
+function challenge(name){
+  selectedChat=name;
+  board=Array(9).fill('');
+  turn='X';
+  gameOver=false;
+  show('tris');
+}
+
+function tris(){
+  content.innerHTML=`
+    <h2 class="screen-title">Sfida a tris</h2>
+    <section class="card">
+      <h3 class="card-title">${selectedChat} ha rifiutato?</h3>
+      <p class="text">Puoi proporre una sfida simpatica. Chi vince ottiene una chat bonus.</p>
+      <div class="tris-board">
+        ${board.map((c,i)=>`<button class="cell" onclick="play(${i})">${c}</button>`).join('')}
+      </div>
+      <button class="btn green" onclick="resetGame()">Nuova sfida</button>
+      <button class="btn red" onclick="show('vicini')">Annulla</button>
+    </section>
+  `;
+}
+
+function play(i){
+  if(gameOver || board[i])return;
+  board[i]=turn;
+  if(win(turn)){gameOver=true;toast(turn==='X'?'Hai vinto: chat bonus!':'Hai perso la sfida');}
+  else if(board.every(Boolean)){gameOver=true;toast('Pareggio');}
+  else turn=turn==='X'?'O':'X';
+  tris();
+}
+
+function win(t){
+  return [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]].some(a=>a.every(i=>board[i]===t));
+}
+
+function resetGame(){board=Array(9).fill('');turn='X';gameOver=false;tris();}
+
+function menu(){
+  content.innerHTML=`
+    <h2 class="screen-title">Menu</h2>
+    <section class="card">
+      <button class="btn" onclick="show('profilo')">Profilo</button>
+      <button class="btn" onclick="show('vicini')">Persone vicine</button>
+      <button class="btn" onclick="show('tris')">Sfida a tris</button>
+      <button class="btn red" onclick="authBtn.click()">Esci</button>
+    </section>
+  `;
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.display='block';
+  setTimeout(()=>t.style.display='none',2500);
+}
+
+home();
+</script>
 </body>
 </html>
