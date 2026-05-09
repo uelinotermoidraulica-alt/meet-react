@@ -1,81 +1,22 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification, reload } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-const firebaseConfig={apiKey:"AIzaSyAIydfYnvkcKVai2m6Zl7LjnsXiQnT0PMk",authDomain:"meet-react-dd136.firebaseapp.com",projectId:"meet-react-dd136",storageBucket:"meet-react-dd136.firebasestorage.app",messagingSenderId:"902511777751",appId:"1:902511777751:web:514ffef33e30d704575d92",measurementId:"G-X3SEF0W2N5"};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
-
-const DEMO_EMAIL="demo@meetreact.local";
-const DEMO_PASSWORD="Demo1234";
-
-let currentUser=null,currentProfile=null,view="nearby",nearbyUsers=[],gpsReady=false,demoMode=false;
-
-const interestsList=["musica","montagna","caffè","aperitivo","moda","sport","viaggi","cinema","arte","moto","palestra","cucina","natura","ballo","lettura","metal detecting"];
-const stickers=[["./assets/caffe.png","Caffè insieme?"],["./assets/drink.png","Drink?"],["./assets/fuoco.png","Sei tanta roba"],["./assets/banana.png","Sono qui vicino"],["./assets/limone.png","Parliamo due minuti?"],["./assets/pere.png","Due passi?"]];
-const content=document.getElementById("content"),authBtn=document.getElementById("authBtn");
-
-document.querySelectorAll(".bottom-nav button").forEach(btn=>btn.addEventListener("click",()=>showView(btn.dataset.view)));
-window.showView=v=>{view=v;render();};
-
-authBtn.onclick=async()=>{
-  if(currentUser){
-    if(demoMode){demoMode=false;currentUser=null;currentProfile=null;nearbyUsers=[];toast("Uscito dalla demo");render();return;}
-    await signOut(auth);toast("Logout effettuato");
-  }else showLogin();
-};
-
-onAuthStateChanged(auth,async user=>{
-  if(demoMode)return;
-  currentUser=user;authBtn.textContent=user?"Esci":"Login";
-  if(user){
-    try{
-      await reload(user);
-      if(!user.emailVerified){showVerifyEmailView();return;}
-      await loadOrCreateProfile();await updateMyLocation(false);await loadNearbyUsers();
-    }catch(e){toast("Errore: "+cleanError(e.message));}
-  }else{currentProfile=null;nearbyUsers=[];gpsReady=false;}
-  render();
-});
-
-function makeDemoUser(){
-  demoMode=true;
-  currentUser={uid:"demo-user",email:DEMO_EMAIL,emailVerified:true};
-  currentProfile={uid:"demo-user",email:DEMO_EMAIL,name:"Demo",age:"30",bio:"Profilo demo senza registrazione",photo:"",interests:["caffè","musica","montagna"],visible:true,profileComplete:true,lat:45.99,lng:9.03,updatedAt:Date.now()};
-  nearbyUsers=[{uid:"demo-2",name:"Profilo test",age:"29",bio:"Utente dimostrativo entro 300 metri",photo:"",interests:["caffè","aperitivo"],distance:120,profileComplete:true,visible:true,lat:45.9905,lng:9.0305}];
-  gpsReady=true;
-  authBtn.textContent="Esci";
-  view="nearby";
-  toast("Accesso demo attivo");
-  render();
-}
-
-function defaultProfile(){return{uid:currentUser.uid,email:currentUser.email,emailVerified:currentUser.emailVerified,name:"",age:"",bio:"",photo:"",interests:[],visible:true,profileComplete:false,lat:null,lng:null,updatedAt:Date.now()};}
-async function loadOrCreateProfile(){const ref=doc(db,"users",currentUser.uid),snap=await getDoc(ref);if(snap.exists())currentProfile={...defaultProfile(),...snap.data(),emailVerified:currentUser.emailVerified};else{currentProfile=defaultProfile();await setDoc(ref,currentProfile);}}
-async function saveProfileToFirebase(){if(demoMode)return;if(currentUser&&currentProfile)await setDoc(doc(db,"users",currentUser.uid),currentProfile,{merge:true});}
-async function updateMyLocation(showMsg=true){if(demoMode){gpsReady=true;if(showMsg)toast("GPS demo attivo");return;}if(!currentUser||!currentProfile)return;if(!navigator.geolocation){gpsReady=false;if(showMsg)toast("GPS non supportato");return;}navigator.geolocation.getCurrentPosition(async pos=>{gpsReady=true;currentProfile.lat=pos.coords.latitude;currentProfile.lng=pos.coords.longitude;currentProfile.updatedAt=Date.now();await saveProfileToFirebase();await loadNearbyUsers();if(showMsg)toast("Posizione aggiornata");render();},()=>{gpsReady=false;if(showMsg)toast("Permetti il GPS per vedere chi è vicino");render();},{enableHighAccuracy:true,timeout:10000});}
-async function loadNearbyUsers(){nearbyUsers=[];if(demoMode)return;if(!currentUser||!currentProfile||!currentProfile.lat||!currentProfile.lng)return;const qs=await getDocs(collection(db,"users"));qs.forEach(d=>{const u=d.data();if(!u.uid||u.uid===currentUser.uid||!u.profileComplete||u.visible===false||!u.lat||!u.lng)return;const distance=getDistanceMeters(currentProfile.lat,currentProfile.lng,u.lat,u.lng);if(distance<=300)nearbyUsers.push({...u,distance:Math.round(distance)});});nearbyUsers.sort((a,b)=>a.distance-b.distance);}
-function render(){document.querySelectorAll(".bottom-nav button").forEach(b=>b.classList.remove("active"));const nav=document.getElementById("nav-"+view);if(nav)nav.classList.add("active");if(!currentUser){content.innerHTML=welcomeView();return;}if(view==="nearby")content.innerHTML=nearbyView();if(view==="profile")content.innerHTML=profileView();if(view==="stickers")content.innerHTML=stickersView();if(view==="chat")content.innerHTML=chatView();if(view==="menu")content.innerHTML=menuView();}
-function welcomeView(){return `<div class="card"><h2>Benvenuto su Meet & React</h2><p class="bio">Accedi, registrati o usa l'accesso demo senza registrazione.</p><button class="btn primary" onclick="showLogin()">Login / Registrati</button><br><br><button class="btn green" onclick="demoAccess()">Entra in demo</button><p class="small">Demo: ${DEMO_EMAIL} / ${DEMO_PASSWORD}</p></div>`;}
-window.showLogin=function(){content.innerHTML=`<div class="card"><h2>Login / Registrazione</h2><input class="input" id="email" placeholder="Email vera" type="email"><input class="input" id="password" placeholder="Password minimo 6 caratteri" type="password"><div class="grid2"><button class="btn primary" onclick="login()">Accedi</button><button class="btn" onclick="register()">Registrati</button></div><br><button class="btn green" onclick="demoAccess()">Entra in demo senza registrazione</button><p class="small">La registrazione reale invia una mail di verifica. Senza verifica email l'app resta bloccata sulla schermata di conferma.</p></div>`;}
-window.demoAccess=function(){makeDemoUser();}
-window.login=async()=>{try{const email=val("email"),password=val("password");if(email===DEMO_EMAIL&&password===DEMO_PASSWORD){makeDemoUser();return;}await signInWithEmailAndPassword(auth,email,password);await reload(auth.currentUser);if(!auth.currentUser.emailVerified){showVerifyEmailView();toast("Devi verificare la mail prima di entrare");return;}toast("Login riuscito");view="nearby";render();}catch(e){toast("Errore login: "+cleanError(e.message));}};
-window.register=async()=>{try{const cred=await createUserWithEmailAndPassword(auth,val("email"),val("password"));await sendEmailVerification(cred.user);showVerifyEmailView();toast("Registrazione fatta. Controlla la mail.");}catch(e){toast("Errore registrazione: "+cleanError(e.message));}};
-function showVerifyEmailView(){content.innerHTML=`<div class="card"><h2>Verifica email richiesta</h2><p class="bio">Ti abbiamo inviato una mail. Clicca il link di verifica, poi torna qui.</p><button class="btn primary" onclick="checkEmailVerified()">Ho verificato la mail</button><br><br><button class="btn" onclick="resendVerification()">Reinvia email</button><br><br><button class="btn danger" onclick="authBtn.click()">Esci</button></div>`;}
-window.checkEmailVerified=async()=>{if(!auth.currentUser)return;await reload(auth.currentUser);if(auth.currentUser.emailVerified){await loadOrCreateProfile();toast("Email verificata");view="profile";render();}else toast("Email non ancora verificata");};
-window.resendVerification=async()=>{if(auth.currentUser){await sendEmailVerification(auth.currentUser);toast("Email reinviata");}};
-function nearbyView(){let html=`<h2 class="section-title">Persone vicine</h2><div class="notice">📍 Qui vedi se qualcuno è entro 300 metri reali.</div><button class="btn green" onclick="refreshLocation()">Aggiorna posizione GPS</button>`;if(demoMode)html+=`<div class="notice">Modalità demo attiva: questi dati sono di prova.</div>`;if(!currentProfile)return html+`<div class="card"><h2>Profilo in caricamento</h2></div>`;if(!currentProfile.profileComplete)return html+`<div class="card"><h2>Profilo non completo</h2><p class="bio">Per essere visibile devi completare foto, nome e passioni.</p><button class="btn primary" onclick="showView('profile')">Completa profilo</button></div>`;if(!gpsReady)return html+`<div class="card"><h2>GPS non attivo</h2><p class="bio">Permetti la posizione al browser.</p></div>`;if(!nearbyUsers.length)return html+`<div class="card"><h2>Nessun utente entro 300 m</h2><p class="bio">Per testare usa un secondo telefono con un altro account.</p></div>`;return html+nearbyUsers.map(userCard).join("");}
-function userCard(u){const common=(u.interests||[]).filter(i=>(currentProfile.interests||[]).includes(i));return `<div class="card profile-preview"><div class="avatar">${u.photo?`<img src="${u.photo}">`:"🙂"}</div><div><h2 class="name">${esc(u.name)}${u.age?", "+esc(u.age):""}</h2><p class="meta">📍 ${u.distance} m • 🟢 In zona</p><p class="bio">${esc(u.bio||"")}</p><div class="chips">${(u.interests||[]).map(i=>`<span class="chip">${esc(i)}</span>`).join("")}</div><p class="common">🔥 ${common.length} interessi in comune</p><div class="grid2"><button class="btn primary" onclick="sendSticker('${u.uid}','Caffè insieme?')">Caffè</button><button class="btn" onclick="sendSticker('${u.uid}','Sei tanta roba')">Sticker</button></div></div></div>`;}
-function profileView(){const p=currentProfile||defaultProfile();return `<h2 class="section-title">Il mio profilo</h2><div class="card"><div class="profile-head"><div class="avatar-large" id="photoPreview">${p.photo?`<img src="${p.photo}">`:"🙂"}</div><div><h2>Foto profilo</h2><p class="bio">Carica una foto reale del viso.</p><label class="file-label">📸 Carica foto<input type="file" accept="image/*" onchange="loadPhoto(event)"></label></div></div><input class="input" id="pname" placeholder="Nome" value="${esc(p.name)}"><input class="input" id="page" placeholder="Età" inputmode="numeric" value="${esc(p.age)}"><textarea id="pbio" placeholder="Bio breve">${esc(p.bio)}</textarea><h3>Passioni / interessi</h3><div class="chips">${interestsList.map(i=>`<label class="chip-check"><input type="checkbox" value="${i}" ${(p.interests||[]).includes(i)?"checked":""}><span>${i}</span></label>`).join("")}</div><button class="btn primary" onclick="saveProfile()">Salva profilo</button></div>`;}
-window.loadPhoto=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{if(!currentProfile)currentProfile=defaultProfile();currentProfile.photo=ev.target.result;document.getElementById("photoPreview").innerHTML=`<img src="${currentProfile.photo}">`;toast("Foto caricata");};reader.readAsDataURL(file);};
-window.saveProfile=async()=>{if(!currentProfile)currentProfile=defaultProfile();currentProfile.name=val("pname");currentProfile.age=val("page");currentProfile.bio=val("pbio");currentProfile.interests=Array.from(document.querySelectorAll(".chip-check input:checked")).map(x=>x.value);currentProfile.profileComplete=Boolean(currentProfile.name&&currentProfile.photo&&currentProfile.interests.length>0);currentProfile.updatedAt=Date.now();await saveProfileToFirebase();if(!currentProfile.profileComplete){toast("Servono nome, foto e almeno un interesse");return;}toast("Profilo salvato");await updateMyLocation(false);await loadNearbyUsers();showView("nearby");};
-function stickersView(){return `<h2 class="section-title">Sticker</h2><div class="grid3">${stickers.map(s=>`<button class="sticker"><img class="sticker-img" src="${s[0]}" alt=""><span>${s[1]}</span></button>`).join("")}</div>`;}
-function chatView(){return `<h2 class="section-title">Chat</h2><div class="card"><p class="bio">La chat reale sarà il prossimo passaggio.</p></div>`;}
-function menuView(){return `<h2 class="section-title">Menu</h2><div class="grid2"><button class="btn" onclick="showView('profile')">Profilo</button><button class="btn" onclick="refreshLocation()">Aggiorna GPS</button><button class="btn danger" onclick="authBtn.click()">Esci</button></div></div>`;}
-window.refreshLocation=async()=>await updateMyLocation(true);
-window.sendSticker=async(toUid,text)=>{if(demoMode){toast("Sticker demo inviato");return;}await addDoc(collection(db,"messages"),{from:currentUser.uid,to:toUid,text:"Sticker: "+text,createdAt:serverTimestamp()});toast("Sticker inviato");};
-function val(id){return document.getElementById(id)?.value?.trim()||"";}
-function getDistanceMeters(lat1,lon1,lat2,lon2){const R=6371000,toRad=d=>d*Math.PI/180,dLat=toRad(lat2-lat1),dLon=toRad(lon2-lon1),a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
-function cleanError(msg){return String(msg).replace("Firebase: ","").replace("Error ","").replace("(auth/","").replace(").","");}
-function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.style.display="block";setTimeout(()=>t.style.display="none",3500);}
-function esc(str){return String(str||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
-render();
+:root{--bg:#090914;--card:#17172b;--text:#f7f4ff;--muted:#d8c9ad;--line:rgba(255,255,255,.18);--purple:#8d43ff;--pink:#ff4d94;--green:#33dd88}
+*{box-sizing:border-box}
+body{margin:0;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background-image:linear-gradient(rgba(8,7,12,.52),rgba(8,7,12,.64)),url('./assets/sfondo.png');background-size:cover;background-position:center;background-repeat:no-repeat;background-attachment:fixed;min-height:100vh}
+.app{min-height:100vh;max-width:520px;margin:auto;padding:calc(18px + env(safe-area-inset-top)) 18px calc(92px + env(safe-area-inset-bottom))}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+h1{font-size:24px;letter-spacing:1px;margin:0;color:#ffd087;text-shadow:0 2px 12px rgba(0,0,0,.55)}
+.topbar p,.bio,.small,.meta{color:var(--muted);font-size:14px;line-height:1.35;margin:5px 0}
+.pill,.btn{border:1px solid var(--line);background:rgba(40,30,45,.82);color:white;border-radius:18px;padding:12px 14px;font-weight:800}
+.btn{width:100%;font-size:15px}.btn.primary{background:linear-gradient(135deg,var(--pink),var(--purple));border:0}.btn.green{background:#123b2a;color:#a8ffd0}.btn.danger{background:#2b1620;color:#ffb0c8}
+.card{background:rgba(22,18,30,.82);border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:14px;backdrop-filter:blur(8px);box-shadow:0 10px 28px rgba(0,0,0,.28)}
+.section-title{font-size:22px;margin:18px 0 10px}.notice{padding:12px;border-radius:16px;background:rgba(12,10,18,.76);border:1px dashed var(--line);color:var(--muted);line-height:1.35;margin-bottom:14px;backdrop-filter:blur(8px)}
+.input,textarea{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);background:rgba(10,10,20,.86);color:white;margin:7px 0;font-size:16px}textarea{min-height:90px;resize:none}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.profile-head{display:flex;gap:16px;align-items:center;margin-bottom:14px}.avatar-large{width:100px;height:100px;border-radius:28px;border:2px solid var(--line);background:linear-gradient(135deg,var(--purple),var(--pink));display:grid;place-items:center;overflow:hidden;font-size:42px;flex:0 0 auto}.avatar-large img,.avatar img{width:100%;height:100%;object-fit:cover}
+.file-label{display:inline-block;background:rgba(40,30,45,.85);border:1px solid var(--line);padding:10px 12px;border-radius:14px;font-weight:800;margin-top:8px}.file-label input{display:none}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.chip-check input{display:none}.chip-check span,.chip{display:inline-block;background:rgba(10,10,20,.75);border:1px solid var(--line);border-radius:999px;padding:9px 12px;color:#ffe0aa;font-size:13px;font-weight:700}.chip-check input:checked+span{background:linear-gradient(135deg,var(--pink),var(--purple));color:white;border-color:transparent}
+.profile-preview{display:grid;grid-template-columns:80px 1fr;gap:14px;align-items:center}.avatar{width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,var(--purple),var(--pink));display:grid;place-items:center;font-size:34px;overflow:hidden}.name{font-size:22px;margin:0;font-weight:900}.common{color:#ffb35c;font-weight:900}
+.sticker{min-height:124px;background:rgba(12,10,18,.76);border:1px solid var(--line);border-radius:18px;padding:10px;text-align:center;color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.sticker-img{width:62px;height:62px;object-fit:cover;border-radius:16px;box-shadow:0 8px 20px rgba(0,0,0,.38)}
+.bottom-nav{position:fixed;left:0;right:0;bottom:0;margin:auto;max-width:520px;background:rgba(18,14,28,.92);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 10px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(10px)}
+.bottom-nav button{background:transparent;border:0;color:#ffd9a5;font-size:21px;display:flex;flex-direction:column;align-items:center;gap:3px}.bottom-nav span{font-size:10px}.bottom-nav button.active{color:#ff64a5}
+.nav-img{width:28px;height:28px;object-fit:cover;border-radius:9px;display:block}
+#toast{position:fixed;bottom:92px;left:18px;right:18px;max-width:480px;margin:auto;background:rgba(32,24,59,.96);color:white;padding:14px;border-radius:16px;border:1px solid var(--line);display:none;text-align:center;font-weight:800;z-index:50}
