@@ -1,13 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap');
 
-PACCHETTO DEMO MEET & REACT
+:root{
+  --wood-dark:#2b1609;
+  --wood-mid:#7b4a1e;
+  --wood-light:#d49a54;
+  --cream:#ffe9c2;
+  --glass:rgba(18,12,8,0.72);
+}
 
-Contiene:
-- index.html
-- style.css
-- struttura base moderna
-- tema legno
-- schermata profilo
-- schermata vicini
-- sfida a tris demo
+body{
+  margin:0;
+  font-family:'Fredoka', Arial, sans-serif;
+  background:
+    radial-gradient(circle at top,#c8914f 0%,#6b3d18 38%,#1b0d05 100%);
+  color:white;
+}
 
-Puoi caricare tutto su GitHub Pages.
+.overlay{
+  min-height:100vh;
+  padding:24px;
+  padding-bottom:105px;
+  background:rgba(0,0,0,0.25);
+}
+
+.app-title{
+  font-size:44px;
+  margin:0;
+  color:var(--cream);
+  letter-spacing:1px;
+  text-shadow:
+    0 3px 0 #5a2d10,
+    0 6px 12px rgba(0,0,0,0.55);
+}
+
+.app-subtitle{
+  margin:6px 0 22px;
+  color:#f6d19b;
+  font-size:18px;
+  font-weight:600;
+  text-shadow:0 2px 4px rgba(0,0,0,0.6);
+}
+
+.card{
+  background:var(--glass);
+  backdrop-filter:blur(10px);
+  border-radius:30px;
+  padding:22px;
+  margin-bottom:22px;
+  border:1px solid rgba(255,230,190,0.25);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    0 12px 35px rgba(0,0,0,0.45);
+}
+
+.menu-title{
+  margin:0 0 12px;
+  font-size:32px;
+  color:#fff2d4;
+  font-weight:700;
+  letter-spacing:0.5px;
+  text-shadow:
+    0 2px 0 #5c2f12,
+    0 5px 10px rgba(0,0,0,0.55);
+}
+
+.small-title{
+  color:#ffd28e;
+  font-size:22px;
+  margin-bottom:10px;
+  text-shadow:0 2px 0 #4a230d;
+}
+
+.menu-text{
+  font-size:19px;
+  line-height:1.35;
+  color:#f4d7ad;
+  font-weight:600;
+  text-shadow:0 2px 4px rgba(0,0,0,0.65);
+}
+
+.profile-pic{
+  width:135px;
+  height:135px;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 30% 25%,#f0c07a,#8a501f 58%,#3b1c0a);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:50px;
+  margin:8px auto 22px;
+  box-shadow:
+    inset 0 4px 8px rgba(255,255,255,0.25),
+    inset 0 -8px 12px rgba(0,0,0,0.35),
+    0 12px 25px rgba(0,0,0,0.45);
+}
+
+input,textarea{
+  width:100%;
+  padding:15px;
+  margin-top:12px;
+  border:none;
+  border-radius:18px;
+  background:rgba(255,245,225,0.12);
+  color:white;
+  box-sizing:border-box;
+  font-family:'Fredoka', Arial, sans-serif;
+  font-size:18px;
+  font-weight:600;
+  outline:none;
+  border:1px solid rgba(255,220,170,0.18);
+}
+
+input::placeholder,textarea::placeholder{
+  color:#e8c89c;
+}
+
+.tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:15px;
+}
+
+.tags span{
+  background:linear-gradient(135deg,#5d3214,#a8672b);
+  padding:9px 15px;
+  border-radius:30px;
+  color:#ffe7bf;
+  font-size:15px;
+  font-weight:700;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 4px 10px rgba(0,0,0,0.35);
+}
+
+.wood-btn{
+  width:100%;
+  padding:17px;
+  margin-top:20px;
+  border:none;
+  border-radius:22px;
+  font-family:'Fredoka', Arial, sans-serif;
+  font-size:21px;
+  font-weight:700;
+  color:#fff4dc;
+  cursor:pointer;
+  background:
+    linear-gradient(135deg,#5b2c0f,#b97735 50%,#e1a35b);
+  text-shadow:0 2px 0 #5c2b0e;
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.28),
+    inset 0 -5px 0 rgba(70,30,8,0.55),
+    0 10px 22px rgba(0,0,0,0.45);
+}
+
+.bottom-bar{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  display:flex;
+  justify-content:space-around;
+  background:rgba(25,12,5,0.88);
+  backdrop-filter:blur(12px);
+  padding:12px 8px;
+  border-top:1px solid rgba(255,220,170,0.22);
+  box-shadow:0 -8px 24px rgba(0,0,0,0.45);
+}
+
+.nav-item{
+  text-align:center;
+  color:#d7a86c;
+  font-size:24px;
+  font-weight:700;
+  text-shadow:0 2px 0 #351707;
+}
+
+.nav-item span{
+  display:block;
+  margin-top:3px;
+  font-size:13px;
+  letter-spacing:0.4px;
+}
+
+.nav-item.active{
+  color:#fff0cb;
+  transform:translateY(-2px);
+  text-shadow:
+    0 2px 0 #6b3210,
+    0 0 12px rgba(255,205,120,0.65);
+}
