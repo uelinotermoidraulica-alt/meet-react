@@ -1,1 +1,31 @@
-{"name":"Meet & React","short_name":"MeetReact","start_url":"./","display":"standalone","background_color":"#090914","theme_color":"#8d43ff","icons":[]}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Meet & React</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div>
+    <h1>MEET & REACT</h1>
+    <p>Solo persone reali entro 300 metri.</p>
+  </div>
+  <button class="pill" id="authBtn">Login</button>
+</header>
+<main id="content"></main>
+<nav class="bottom-nav">
+  <button data-view="nearby" id="nav-nearby"><img src="./assets/limone.png" class="nav-img" alt=""><span>Vicini</span></button>
+  <button data-view="stickers" id="nav-stickers"><img src="./assets/pesca.png" class="nav-img" alt=""><span>Sticker</span></button>
+  <button data-view="chat" id="nav-chat"><img src="./assets/caffe.png" class="nav-img" alt=""><span>Chat</span></button>
+  <button data-view="profile" id="nav-profile"><img src="./assets/pere.png" class="nav-img" alt=""><span>Profilo</span></button>
+  <button data-view="menu" id="nav-menu"><img src="./assets/scopa.png" class="nav-img" alt=""><span>Menu</span></button>
+</nav>
+</div>
+<div id="toast"></div>
+<script type="module" src="./script.js?v=emaildemo1"></script>
+</body>
+</html>
