@@ -1,12 +1,28 @@
-Meet & React - Firebase ready
 
-Funziona subito in DEMO LOCALE.
-Per registrazione/chat/profili reali:
-1) Crea progetto Firebase
-2) Abilita Authentication Email/Password
-3) Abilita Firestore
-4) Copia la configurazione in firebase-config.js
-5) Pubblica su Netlify o Vercel
-6) Inserisci le regole firestore.rules in Firebase
-
-Il GPS funziona su HTTPS, quindi Netlify/Vercel vanno bene.
+:root{--dark:#160d09;--panel:#26140d;--wood1:#7a3f1f;--gold:#f2bf72;--cream:#fff0d2;--muted:#d9b48a}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--dark);color:var(--cream)}
+body{background:radial-gradient(circle at 50% -20%,rgba(255,178,90,.2),transparent 34%),linear-gradient(180deg,#120907,#21100b 45%,#120907)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.28;background:repeating-linear-gradient(90deg,rgba(255,196,120,.06) 0 2px,transparent 2px 18px)}
+.app-shell{position:relative;max-width:520px;margin:auto;min-height:100vh;padding:22px 16px calc(104px + env(safe-area-inset-bottom))}
+.app-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+h1{margin:0;font-size:34px;color:#ffe3af;text-transform:uppercase;text-shadow:0 2px 0 #6d3718,0 5px 10px #000}
+.app-header p{margin:4px 0 0;color:var(--muted);font-weight:800}
+.screen-title{font-size:30px;text-align:center;margin:0 0 14px;color:#fff4d7;text-shadow:0 2px 0 #5c2d14,0 4px 12px #000}
+.panel{position:relative;border-radius:20px;padding:18px;margin-bottom:14px;background:linear-gradient(160deg,rgba(255,198,120,.08),transparent 28%),linear-gradient(180deg,#2a160d,#170d09);border:1px solid rgba(245,173,96,.44);box-shadow:inset 0 1px 0 rgba(255,230,180,.16),0 14px 32px rgba(0,0,0,.38)}
+.wood-btn,.small-wood-btn,button.primary,button.green,button.red{border:0;cursor:pointer;color:#fff1dc;font-weight:900;border-radius:18px;background:linear-gradient(180deg,#c98945,#7e3f1e);text-shadow:0 2px 0 rgba(64,23,6,.7);box-shadow:inset 0 2px 0 rgba(255,230,170,.24),inset 0 -3px 0 rgba(70,25,7,.45),0 8px 18px rgba(0,0,0,.38)}
+.wood-btn,button.primary,button.green,button.red{width:100%;padding:15px 16px;margin:6px 0;font-size:17px}.small-wood-btn{width:auto;padding:10px 13px;font-size:13px;border-radius:14px}
+button.primary{background:linear-gradient(135deg,#e45b98,#7358ff)}button.green{background:linear-gradient(180deg,#84a65d,#4b6e3e)}button.red{background:linear-gradient(180deg,#bd5738,#7f2918)}
+input,textarea{width:100%;border-radius:14px;border:1px solid rgba(245,173,96,.45);background:rgba(9,5,4,.66);color:#fff4dc;padding:13px 14px;font-size:16px;margin:6px 0}textarea{min-height:92px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sticker-card{min-height:185px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:#fff4dc;font-size:20px;font-weight:900}
+.sticker-card img{width:92px;height:92px;border-radius:24px;object-fit:cover;box-shadow:0 10px 20px rgba(0,0,0,.45)}
+.avatar{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,#4a2414,#c9843f);border:3px solid rgba(247,188,112,.72);box-shadow:0 0 0 4px rgba(30,12,5,.55),0 10px 18px rgba(0,0,0,.45);font-size:42px}.avatar.big{width:150px;height:150px;margin:0 auto 12px;font-size:56px}.avatar img{width:100%;height:100%;object-fit:cover}
+.profile-name{text-align:center;font-size:26px;font-weight:950;color:#ffd79b;text-shadow:0 2px 0 #5a2d14;margin:8px 0 12px}.user-card{display:grid;grid-template-columns:104px 1fr;gap:14px;align-items:center}
+.badge{display:inline-block;background:rgba(110,155,78,.24);border:1px solid rgba(190,255,150,.24);color:#d9ffb8;padding:7px 10px;border-radius:999px;font-weight:900}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.chip{padding:8px 11px;border-radius:999px;background:rgba(255,203,130,.12);border:1px solid rgba(255,203,130,.22);color:#ffd99f;font-weight:850}
+.interest-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}.interest-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:14px;background:rgba(10,5,4,.38);border:1px solid rgba(245,173,96,.24);font-weight:850}
+.chat-box{max-height:45vh;overflow:auto}.bubble{max-width:84%;padding:12px 14px;border-radius:18px;margin:8px 0;background:rgba(10,5,4,.55);border:1px solid rgba(255,210,140,.14)}.me{margin-left:auto;background:linear-gradient(135deg,#e45b98,#7358ff);border:0}
+.tris-board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.cell{aspect-ratio:1;border-radius:16px;border:1px solid rgba(245,173,96,.4);font-size:42px}
+.info{color:#d9b48a;line-height:1.35;font-weight:700}.bottom-nav{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:auto;display:grid;grid-template-columns:repeat(6,1fr);background:rgba(23,12,9,.94);border-top:1px solid rgba(245,173,96,.32);padding:8px 4px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(12px)}
+.nav-btn{margin:0;padding:0;border:0;background:transparent;color:#eec28a;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:850}.nav-btn img{width:38px;height:38px;border-radius:50%;object-fit:cover;box-shadow:0 6px 13px rgba(0,0,0,.45)}.nav-btn.active{color:#fff0cc}.nav-btn.active img{box-shadow:0 0 0 3px rgba(255,218,150,.75),0 0 18px rgba(221,141,65,.7)}
+#toast{display:none;position:fixed;left:18px;right:18px;bottom:100px;max-width:480px;margin:auto;background:#25130d;border:1px solid rgba(245,173,96,.38);color:#fff1dc;padding:14px;border-radius:18px;text-align:center;font-weight:900;z-index:20}.hidden{display:none!important}

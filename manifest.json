@@ -1,16 +1,1 @@
-<!doctype html><html lang="it"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Meet & React</title><meta name="theme-color" content="#160d09">
-<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="style.css">
-</head><body>
-<div class="app-shell">
-<header class="app-header"><div><h1>Meet & React</h1><p>Persone vere entro 300 metri</p></div><button id="authTopBtn" class="small-wood-btn">Accedi</button></header>
-<main id="screen" class="screen"></main>
-<nav class="bottom-nav">
-<button data-view="vicini" class="nav-btn"><img src="assets/nav-vicini.jpg"><span>Vicini</span></button>
-<button data-view="sticker" class="nav-btn"><img src="assets/nav-sticker.jpg"><span>Sticker</span></button>
-<button data-view="chat" class="nav-btn"><img src="assets/nav-chat.jpg"><span>Chat</span></button>
-<button data-view="profilo" class="nav-btn"><img src="assets/nav-profilo.jpg"><span>Profilo</span></button>
-<button data-view="tris" class="nav-btn"><img src="assets/nav-tris.jpg"><span>Match</span></button>
-<button data-view="menu" class="nav-btn"><img src="assets/nav-menu.jpg"><span>Menu</span></button>
-</nav></div><div id="toast"></div><script type="module" src="app.js"></script></body></html>
+{"name":"Meet & React","short_name":"MeetReact","start_url":"./","display":"standalone","background_color":"#160d09","theme_color":"#160d09","icons":[]}

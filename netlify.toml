@@ -1,1 +1,8 @@
-{"name":"Meet & React","short_name":"MeetReact","start_url":"./","display":"standalone","background_color":"#160d09","theme_color":"#160d09","icons":[]}
+[build]
+publish = "."
+command = ""
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
