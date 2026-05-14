@@ -1,13 +1,12 @@
+Meet & React - Firebase ready
 
-PACCHETTO DEMO MEET & REACT
+Funziona subito in DEMO LOCALE.
+Per registrazione/chat/profili reali:
+1) Crea progetto Firebase
+2) Abilita Authentication Email/Password
+3) Abilita Firestore
+4) Copia la configurazione in firebase-config.js
+5) Pubblica su Netlify o Vercel
+6) Inserisci le regole firestore.rules in Firebase
 
-Contiene:
-- index.html
-- style.css
-- struttura base moderna
-- tema legno
-- schermata profilo
-- schermata vicini
-- sfida a tris demo
-
-Puoi caricare tutto su GitHub Pages.
+Il GPS funziona su HTTPS, quindi Netlify/Vercel vanno bene.

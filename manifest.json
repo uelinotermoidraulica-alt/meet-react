@@ -1,31 +1,16 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Meet & React</title>
-<link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="app">
-<header class="topbar">
-  <div>
-    <h1>MEET & REACT</h1>
-    <p>Solo persone reali entro 300 metri.</p>
-  </div>
-  <button class="pill" id="authBtn">Login</button>
-</header>
-<main id="content"></main>
+<!doctype html><html lang="it"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Meet & React</title><meta name="theme-color" content="#160d09">
+<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="style.css">
+</head><body>
+<div class="app-shell">
+<header class="app-header"><div><h1>Meet & React</h1><p>Persone vere entro 300 metri</p></div><button id="authTopBtn" class="small-wood-btn">Accedi</button></header>
+<main id="screen" class="screen"></main>
 <nav class="bottom-nav">
-  <button data-view="nearby" id="nav-nearby"><img src="./assets/limone.png" class="nav-img" alt=""><span>Vicini</span></button>
-  <button data-view="stickers" id="nav-stickers"><img src="./assets/pesca.png" class="nav-img" alt=""><span>Sticker</span></button>
-  <button data-view="chat" id="nav-chat"><img src="./assets/caffe.png" class="nav-img" alt=""><span>Chat</span></button>
-  <button data-view="profile" id="nav-profile"><img src="./assets/pere.png" class="nav-img" alt=""><span>Profilo</span></button>
-  <button data-view="menu" id="nav-menu"><img src="./assets/scopa.png" class="nav-img" alt=""><span>Menu</span></button>
-</nav>
-</div>
-<div id="toast"></div>
-<script type="module" src="./script.js?v=emaildemo1"></script>
-</body>
-</html>
+<button data-view="vicini" class="nav-btn"><img src="assets/nav-vicini.jpg"><span>Vicini</span></button>
+<button data-view="sticker" class="nav-btn"><img src="assets/nav-sticker.jpg"><span>Sticker</span></button>
+<button data-view="chat" class="nav-btn"><img src="assets/nav-chat.jpg"><span>Chat</span></button>
+<button data-view="profilo" class="nav-btn"><img src="assets/nav-profilo.jpg"><span>Profilo</span></button>
+<button data-view="tris" class="nav-btn"><img src="assets/nav-tris.jpg"><span>Match</span></button>
+<button data-view="menu" class="nav-btn"><img src="assets/nav-menu.jpg"><span>Menu</span></button>
+</nav></div><div id="toast"></div><script type="module" src="app.js"></script></body></html>
